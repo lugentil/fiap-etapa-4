@@ -22,9 +22,9 @@ spec:
       containers:
         - name: evaluation-service
 <<<<<<< HEAD
-          image: 929265854968.dkr.ecr.us-east-1.amazonaws.com/togglemaster/evaluation-service:27d56dd5e79d58d29efc5ff668a0080f1c3de45f
+          image: 929265854968.dkr.ecr.us-east-1.amazonaws.com/togglemaster/evaluation-service:a8f984160f931021e16241414118bf02b171e480
 =======
-          image: 929265854968.dkr.ecr.us-east-1.amazonaws.com/togglemaster/evaluation-service:1ae6279a7e024f2662378d68f1b7720f15f33db1
+          image: 929265854968.dkr.ecr.us-east-1.amazonaws.com/togglemaster/evaluation-service:a8f984160f931021e16241414118bf02b171e480
 >>>>>>> 24fc496 (Adicionada secret para o ArgoCD)
           imagePullPolicy: Always
           ports:
