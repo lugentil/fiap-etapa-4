@@ -1,0 +1,318 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: togglemaster-overview-dashboard
+  namespace: observability
+  labels:
+    grafana_dashboard: "1"
+data:
+  togglemaster-overview.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "liveNow": true,
+      "panels": [
+        {
+          "type": "row",
+          "title": "Saude do Cluster",
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+          "id": 100,
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "stat",
+          "title": "Pods Running (ToggleMaster)",
+          "gridPos": {"h": 6, "w": 6, "x": 0, "y": 1},
+          "id": 1,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "expr": "count(kube_pod_status_phase{phase=\"Running\", namespace=~\"auth-service|flag-service|targeting-service|evaluation-service|analytics-service\"})",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}
+          },
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "yellow", "value": 3},
+                  {"color": "green", "value": 5}
+                ]
+              },
+              "unit": "short"
+            }
+          }
+        },
+        {
+          "type": "gauge",
+          "title": "CPU do Cluster (%)",
+          "gridPos": {"h": 6, "w": 6, "x": 6, "y": 1},
+          "id": 2,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "expr": "100 - (avg(irate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "min": 0,
+              "max": 100,
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 70},
+                  {"color": "red", "value": 90}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "gauge",
+          "title": "Memoria do Cluster (%)",
+          "gridPos": {"h": 6, "w": 6, "x": 12, "y": 1},
+          "id": 3,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "expr": "100 * (1 - (sum(node_memory_MemAvailable_bytes) / sum(node_memory_MemTotal_bytes)))",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "min": 0,
+              "max": 100,
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 70},
+                  {"color": "red", "value": 90}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "stat",
+          "title": "Nodes Ready",
+          "gridPos": {"h": 6, "w": 6, "x": 18, "y": 1},
+          "id": 4,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "expr": "sum(kube_node_status_condition{condition=\"Ready\", status=\"true\"})",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "row",
+          "title": "Microsservicos - Trafego e Latencia",
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 7},
+          "id": 101,
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "timeseries",
+          "title": "Request Rate por Servico (req/s)",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "id": 5,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "expr": "sum by (service_name) (rate(http_server_duration_milliseconds_count{service_namespace=\"togglemaster\"}[5m]))",
+              "legendFormat": "{{service_name}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps",
+              "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10}
+            }
+          },
+          "options": {
+            "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"]},
+            "tooltip": {"mode": "multi"}
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Latencia P95 por Servico (ms)",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "id": 6,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum by (le, service_name) (rate(http_server_duration_milliseconds_bucket{service_namespace=\"togglemaster\"}[5m])))",
+              "legendFormat": "{{service_name}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ms",
+              "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 10}
+            }
+          },
+          "options": {
+            "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"]}
+          }
+        },
+        {
+          "type": "timeseries",
+          "title": "Taxa de Erro 5xx por Servico (%)",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+          "id": 7,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "expr": "100 * (sum by (service_name) (rate(http_server_duration_milliseconds_count{service_namespace=\"togglemaster\", http_status_code=~\"5..\"}[5m])) / sum by (service_name) (rate(http_server_duration_milliseconds_count{service_namespace=\"togglemaster\"}[5m])))",
+              "legendFormat": "{{service_name}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 1},
+                  {"color": "red", "value": 5}
+                ]
+              },
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 2,
+                "fillOpacity": 20,
+                "thresholdsStyle": {"mode": "line"}
+              }
+            }
+          },
+          "options": {
+            "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["max", "lastNotNull"]}
+          }
+        },
+        {
+          "type": "stat",
+          "title": "Total de Requisicoes (5min)",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+          "id": 8,
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "expr": "sum by (service_name) (increase(http_server_duration_milliseconds_count{service_namespace=\"togglemaster\"}[5m]))",
+              "legendFormat": "{{service_name}}",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "horizontal"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{"color": "blue", "value": null}]
+              }
+            }
+          }
+        },
+        {
+          "type": "row",
+          "title": "Logs em Tempo Real",
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 24},
+          "id": 102,
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "logs",
+          "title": "Logs dos Microsservicos (Loki)",
+          "gridPos": {"h": 12, "w": 24, "x": 0, "y": 25},
+          "id": 9,
+          "datasource": {"type": "loki", "uid": "loki"},
+          "targets": [
+            {
+              "expr": "{namespace=~\"auth-service|flag-service|targeting-service|evaluation-service|analytics-service\"}",
+              "refId": "A",
+              "queryType": "range"
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "showCommonLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": false,
+            "enableLogDetails": true,
+            "dedupStrategy": "none",
+            "sortOrder": "Descending"
+          }
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": ["togglemaster", "fase4"],
+      "templating": {"list": []},
+      "time": {"from": "now-15m", "to": "now"},
+      "timepicker": {},
+      "timezone": "",
+      "title": "ToggleMaster Overview",
+      "uid": "togglemaster-overview",
+      "version": 1,
+      "weekStart": ""
+    }

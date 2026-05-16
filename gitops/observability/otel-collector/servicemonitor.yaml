@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: otel-collector
+  namespace: observability
+  labels:
+    release: kps
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: opentelemetry-collector
+      app.kubernetes.io/name: otel-collector
+  namespaceSelector:
+    matchNames:
+      - observability
+  endpoints:
+    - port: prom-exporter
+      interval: 30s
+      path: /metrics
+      honorLabels: true

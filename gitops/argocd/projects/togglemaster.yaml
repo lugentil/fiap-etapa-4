@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: togglemaster
+  namespace: argocd
+spec:
+  description: ToggleMaster Feature Flag Platform
+  sourceRepos:
+    - "*"
+  destinations:
+    - namespace: auth-service
+      server: https://kubernetes.default.svc
+    - namespace: flag-service
+      server: https://kubernetes.default.svc
+    - namespace: targeting-service
+      server: https://kubernetes.default.svc
+    - namespace: evaluation-service
+      server: https://kubernetes.default.svc
+    - namespace: analytics-service
+      server: https://kubernetes.default.svc
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+    - namespace: observability
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+    - group: networking.k8s.io
+      kind: IngressClass

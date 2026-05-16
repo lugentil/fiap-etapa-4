@@ -1,0 +1,78 @@
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel
+  namespace: observability
+spec:
+  mode: deployment
+  replicas: 1
+  envFrom:
+    - secretRef:
+        name: otel-newrelic-license
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+  ports:
+    - name: prom-exporter
+      port: 8889
+      protocol: TCP
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_mib: 400
+        spike_limit_mib: 100
+      batch:
+        timeout: 5s
+        send_batch_size: 1000
+      resource:
+        attributes:
+          - key: cluster
+            value: togglemaster
+            action: upsert
+          - key: deployment.environment
+            from_attribute: deployment.environment
+            action: insert
+
+    exporters:
+      prometheus:
+        endpoint: 0.0.0.0:8889
+        resource_to_telemetry_conversion:
+          enabled: true
+      otlphttp/loki:
+        endpoint: http://loki.observability.svc.cluster.local:3100/otlp
+      otlphttp/newrelic:
+        endpoint: https://otlp.nr-data.net
+        headers:
+          api-key: ${env:NEW_RELIC_LICENSE_KEY}
+      debug:
+        verbosity: basic
+
+    service:
+      telemetry:
+        logs:
+          level: info
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, resource, batch]
+          exporters: [otlphttp/newrelic, debug]
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, resource, batch]
+          exporters: [prometheus, otlphttp/newrelic]
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, resource, batch]
+          exporters: [otlphttp/loki, otlphttp/newrelic]
