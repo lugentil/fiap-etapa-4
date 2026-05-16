@@ -64,6 +64,25 @@ resource "kubernetes_ingress_v1" "argocd" {
   depends_on = [helm_release.argocd, helm_release.ingress_nginx]
 }
 
+resource "kubernetes_secret" "argocd_repo_github" {
+  metadata {
+    name      = "repo-github-togglemaster"
+    namespace = kubernetes_namespace.argocd.metadata[0].name
+    labels = {
+      "argocd.argoproj.io/secret-type" = "repository"
+    }
+  }
+
+  data = {
+    type     = "git"
+    url      = var.gitops_repo_url
+    username = "x-access-token"
+    password = var.github_dispatch_token
+  }
+
+  depends_on = [helm_release.argocd]
+}
+
 resource "kubectl_manifest" "argocd_project" {
   yaml_body = <<-YAML
     apiVersion: argoproj.io/v1alpha1
