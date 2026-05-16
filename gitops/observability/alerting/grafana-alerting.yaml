@@ -152,7 +152,7 @@ data:
             annotations:
               summary: "Taxa de erro 5xx do auth-service excede 5%"
               description: "O auth-service esta retornando mais de 5% de erros HTTP 5xx nos ultimos 2 minutos. Self-healing sera acionado automaticamente."
-              runbook_url: "https://github.com/tc-fiap-lacf/fiap-etapa-4"
+              runbook_url: "https://github.com/lugentil/fiap-etapa-4"
             labels:
               severity: critical
               service: auth-service
