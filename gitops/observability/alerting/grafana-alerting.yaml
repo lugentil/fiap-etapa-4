@@ -51,7 +51,7 @@ data:
             type: webhook
             disableResolveMessage: true
             settings:
-              url: https://api.github.com/repos/tc-fiap-lacf/fiap-etapa-4/dispatches
+              url: https://api.github.com/repos/lugentil/fiap-etapa-4/dispatches
               httpMethod: POST
               authorization_scheme: Bearer
               authorization_credentials: $GITHUB_DISPATCH_TOKEN
