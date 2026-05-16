@@ -157,6 +157,98 @@ resource "helm_release" "kube_prometheus_stack" {
   ]
 }
 
+resource "helm_release" "loki" {
+  name       = "loki"
+  repository = "https://grafana.github.io/helm-charts"
+  chart      = "loki"
+  namespace  = kubernetes_namespace.observability.metadata[0].name
+  version    = "6.16.0"
+  timeout    = 600
+
+  values = [<<-YAML
+    deploymentMode: SingleBinary
+
+    loki:
+      auth_enabled: false
+      commonConfig:
+        replication_factor: 1
+      storage:
+        type: filesystem
+      schemaConfig:
+        configs:
+          - from: 2024-01-01
+            store: tsdb
+            object_store: filesystem
+            schema: v13
+            index:
+              prefix: index_
+              period: 24h
+      limits_config:
+        retention_period: 24h
+        ingestion_rate_mb: 10
+        ingestion_burst_size_mb: 20
+        allow_structured_metadata: true
+        volume_enabled: true
+      compactor:
+        retention_enabled: true
+        delete_request_store: filesystem
+
+    singleBinary:
+      replicas: 1
+      persistence:
+        enabled: false
+      extraVolumes:
+        - name: loki-data
+          emptyDir: {}
+      extraVolumeMounts:
+        - name: loki-data
+          mountPath: /var/loki
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          memory: 512Mi
+
+    chunksCache:
+      enabled: false
+    resultsCache:
+      enabled: false
+
+    test:
+      enabled: false
+
+    lokiCanary:
+      enabled: false
+
+    monitoring:
+      lokiCanary:
+        enabled: false
+      selfMonitoring:
+        enabled: false
+        grafanaAgent:
+          installOperator: false
+
+    minio:
+      enabled: false
+
+    backend:
+      replicas: 0
+    read:
+      replicas: 0
+    write:
+      replicas: 0
+
+    gateway:
+      enabled: false
+  YAML
+  ]
+
+  depends_on = [
+    kubernetes_namespace.observability,
+  ]
+}
+
 resource "helm_release" "promtail" {
   name       = "promtail"
   repository = "https://grafana.github.io/helm-charts"
