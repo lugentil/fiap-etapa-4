@@ -51,14 +51,13 @@ data:
             type: webhook
             disableResolveMessage: true
             settings:
-              url: https://api.github.com/repos/lugentil/fiap-etapa-4/dispatches
+              url: https://api.github.com/repos/$GITHUB_REPO_FULL_NAME/dispatches
               httpMethod: POST
               authorization_scheme: Bearer
               authorization_credentials: $GITHUB_DISPATCH_TOKEN
               maxAlerts: 1
-              title: ToggleMaster Self-Healing
-              message: ""
-              body: |
+              hmacConfig: {}
+              payload: |
                 {
                   "event_type": "rollout-restart",
                   "client_payload": {
