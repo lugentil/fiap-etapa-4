@@ -21,7 +21,7 @@ spec:
         - name: ecr-secret
       containers:
         - name: analytics-service
-          image: 929265854968.dkr.ecr.us-east-1.amazonaws.com/togglemaster/analytics-service:27d56dd5e79d58d29efc5ff668a0080f1c3de45f
+          image: 929265854968.dkr.ecr.us-east-1.amazonaws.com/togglemaster/analytics-service:49332070452614842a58f23b6420ff30ede666b8
           imagePullPolicy: Always
           ports:
             - containerPort: 8005
