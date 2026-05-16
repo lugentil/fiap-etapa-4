@@ -21,11 +21,7 @@ spec:
         - name: ecr-secret
       containers:
         - name: evaluation-service
-<<<<<<< HEAD
           image: 929265854968.dkr.ecr.us-east-1.amazonaws.com/togglemaster/evaluation-service:a8f984160f931021e16241414118bf02b171e480
-=======
-          image: 929265854968.dkr.ecr.us-east-1.amazonaws.com/togglemaster/evaluation-service:a8f984160f931021e16241414118bf02b171e480
->>>>>>> 24fc496 (Adicionada secret para o ArgoCD)
           imagePullPolicy: Always
           ports:
             - containerPort: 8004
