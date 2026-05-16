@@ -1,0 +1,91 @@
+name: Self-Healing - Rollout Restart
+
+on:
+  repository_dispatch:
+    types: [rollout-restart]
+  workflow_dispatch:
+    inputs:
+      service:
+        description: "Servico a ser reiniciado (apenas auth-service permitido)"
+        required: true
+        default: "auth-service"
+        type: choice
+        options:
+          - auth-service
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  CLUSTER_NAME: togglemaster-cluster
+  ALLOWED_SERVICE: auth-service
+
+jobs:
+  rollout-restart:
+    name: Reiniciar deployment via kubectl
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolver servico alvo
+        id: resolve
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            SVC="${{ github.event.inputs.service }}"
+          else
+            SVC="${{ github.event.client_payload.service }}"
+          fi
+          if [[ -z "$SVC" ]]; then
+            echo "Servico nao informado no payload" >&2
+            exit 1
+          fi
+          if [[ "$SVC" != "${{ env.ALLOWED_SERVICE }}" ]]; then
+            echo "Apenas '${{ env.ALLOWED_SERVICE }}' e permitido neste workflow. Recebido: $SVC" >&2
+            exit 1
+          fi
+          echo "service=$SVC" >> "$GITHUB_OUTPUT"
+
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Atualizar kubeconfig
+        run: aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+
+      - name: Executar rollout restart
+        id: restart
+        run: |
+          SVC="${{ steps.resolve.outputs.service }}"
+          echo "Reiniciando deployment/$SVC no namespace $SVC"
+          kubectl rollout restart deployment/$SVC -n $SVC
+          kubectl rollout status deployment/$SVC -n $SVC --timeout=180s
+          echo "rollout_ok=true" >> "$GITHUB_OUTPUT"
+
+      - name: Capturar status pos-restart
+        if: always()
+        run: |
+          SVC="${{ steps.resolve.outputs.service }}"
+          echo "===== Pods ====="
+          kubectl get pods -n $SVC -o wide
+          echo "===== Eventos recentes ====="
+          kubectl get events -n $SVC --sort-by=.lastTimestamp | tail -20
+
+      - name: Notificar Discord (sucesso)
+        if: success()
+        run: |
+          SVC="${{ steps.resolve.outputs.service }}"
+          ALERTNAME="${{ github.event.client_payload.alertname }}"
+          curl -fsS -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\":\"Self-Healing executado com sucesso\\n**Servico:** $SVC\\n**Alerta:** ${ALERTNAME:-manual}\\n**Acao:** kubectl rollout restart\\n**Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
+
+      - name: Notificar Discord (falha)
+        if: failure()
+        run: |
+          SVC="${{ steps.resolve.outputs.service }}"
+          curl -fsS -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\":\"Self-Healing FALHOU\\n**Servico:** $SVC\\n**Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\\nIntervencao manual necessaria.\"}" || true

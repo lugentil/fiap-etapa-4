@@ -1,0 +1,25 @@
+name: CI - targeting-service
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["targeting-service/**"]
+  pull_request:
+    branches: [main]
+    paths: ["targeting-service/**"]
+
+permissions:
+  contents: write
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_ci-python.yml
+    with:
+      service_name: targeting-service
+      service_path: targeting-service
+      ecr_repository: togglemaster/targeting-service
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}

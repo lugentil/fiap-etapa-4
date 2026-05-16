@@ -1,0 +1,25 @@
+name: CI - evaluation-service 
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["evaluation-service/**"]
+  pull_request:
+    branches: [main]
+    paths: ["evaluation-service/**"]
+
+permissions:
+  contents: write
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_ci-go.yml
+    with:
+      service_name: evaluation-service
+      service_path: evaluation-service
+      ecr_repository: togglemaster/evaluation-service
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}

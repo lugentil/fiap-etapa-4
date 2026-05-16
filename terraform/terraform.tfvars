@@ -17,7 +17,7 @@ db_passwords = {
 
 master_key      = "togglemaster-master-key-faculdade"
 service_api_key = "togglemaster-service-api-key-faculdade"
-gitops_repo_url = "https://github.com/tc-fiap-lacf/fiap-etapa-4.git"
+gitops_repo_url = "https://github.com/lugentil01/fiap-etapa-4.git"
 
 aws_credentials = {
   access_key    = ""
@@ -30,4 +30,4 @@ grafana_admin_password = ""
 discord_webhook_url    = ""
 pagerduty_routing_key  = ""
 github_dispatch_token  = ""
-github_repo_full_name  = ""
+github_repo_full_name  = "lugentil01/fiap-etapa-4"
