@@ -56,7 +56,6 @@ data:
               authorization_scheme: Bearer
               authorization_credentials: $GITHUB_DISPATCH_TOKEN
               maxAlerts: 1
-              hmacConfig: { enabled: false }
               payload:
                   template: |
                     {
