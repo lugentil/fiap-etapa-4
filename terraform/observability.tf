@@ -14,7 +14,7 @@ resource "helm_release" "kube_prometheus_stack" {
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "kube-prometheus-stack"
   namespace  = kubernetes_namespace.observability.metadata[0].name
-  version    = "67.0.0"
+  version    = "85.1.3"
   timeout    = 900
 
   values = [<<-YAML
@@ -52,8 +52,6 @@ resource "helm_release" "kube_prometheus_stack" {
 
     grafana:
       enabled: true
-      image:
-          tag: "12.0.0"
       adminUser: admin
       adminPassword: ${var.grafana_admin_password}
       defaultDashboardsEnabled: true
@@ -96,6 +94,7 @@ resource "helm_release" "kube_prometheus_stack" {
       grafana.ini:
         server:
           root_url: "%(protocol)s://%(domain)s/grafana"
+          serve_from_sub_path: true
         auth.anonymous:
           enabled: false
       persistence:
