@@ -57,15 +57,17 @@ data:
               authorization_credentials: $GITHUB_DISPATCH_TOKEN
               maxAlerts: 1
               hmacConfig: { enabled: false }
-              payload: |
-                {
-                  "event_type": "rollout-restart",
-                  "client_payload": {
-                    "service": "{{ if .Alerts }}{{ (index .Alerts 0).Labels.service }}{{ end }}",
-                    "alertname": "{{ if .Alerts }}{{ (index .Alerts 0).Labels.alertname }}{{ end }}",
-                    "fired_at": "{{ if .Alerts }}{{ (index .Alerts 0).StartsAt }}{{ end }}"
-                  }
-                }
+              payload:
+                  template: |
+                    {
+                      "event_type": "rollout-restart",
+                      "client_payload": {
+                        "service": "{{ if .Alerts }}{{ (index .Alerts 0).Labels.service }}{{ end }}",
+                        "alertname": "{{ if .Alerts }}{{ (index .Alerts 0).Labels.alertname }}{{ end }}",
+                        "fired_at": "{{ if .Alerts }}{{ (index .Alerts 0).StartsAt }}{{ end }}"
+                      }
+                    }
+                  vars: {}
 
   policies.yaml: |
     apiVersion: 1
@@ -116,6 +118,7 @@ data:
                   editorMode: code
                   expr: 'sum(rate(http_server_duration_milliseconds_count{service_name="auth-service",http_status_code=~"5.."}[2m])) / clamp_min(sum(rate(http_server_duration_milliseconds_count{service_name="auth-service"}[2m])), 0.01)'
                   instant: true
+                  range: false
                   intervalMs: 1000
                   maxDataPoints: 43200
                   refId: A
@@ -132,9 +135,8 @@ data:
                       operator:
                         type: and
                       query:
-                        params: [B]
+                        params: [A]
                       reducer:
-                        params: []
                         type: last
                       type: query
                   datasource:
@@ -148,6 +150,7 @@ data:
             noDataState: NoData
             execErrState: Error
             for: 1m
+            isPaused: false
             annotations:
               summary: "Taxa de erro 5xx do auth-service excede 5%"
               description: "O auth-service esta retornando mais de 5% de erros HTTP 5xx nos ultimos 2 minutos. Self-healing sera acionado automaticamente."
@@ -173,6 +176,7 @@ data:
                   editorMode: code
                   expr: 'sum by (namespace, pod) (kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff",namespace=~"auth-service|flag-service|targeting-service|evaluation-service|analytics-service"})'
                   instant: true
+                  range: false
                   intervalMs: 1000
                   maxDataPoints: 43200
                   refId: A
@@ -189,9 +193,8 @@ data:
                       operator:
                         type: and
                       query:
-                        params: [B]
+                        params: [A]
                       reducer:
-                        params: []
                         type: last
                       type: query
                   datasource:
@@ -205,6 +208,7 @@ data:
             noDataState: OK
             execErrState: Error
             for: 2m
+            isPaused: false
             annotations:
               summary: "Pod em CrashLoopBackOff"
               description: "Pelo menos um pod de microsservico esta em CrashLoopBackOff ha mais de 2 minutos."
