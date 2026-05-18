@@ -54,8 +54,7 @@ spec:
               memory: "256Mi"
               cpu: "500m"
           livenessProbe:
-            httpGet:
-              path: /health
+            tcpSocket:
               port: 8005
             initialDelaySeconds: 15
             periodSeconds: 20
