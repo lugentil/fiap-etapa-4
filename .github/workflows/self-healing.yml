@@ -6,12 +6,12 @@ on:
   workflow_dispatch:
     inputs:
       service:
-        description: "Servico a ser reiniciado (apenas auth-service permitido)"
+        description: "Servico a ser reiniciado (apenas evaluation-service permitido)"
         required: true
-        default: "auth-service"
+        default: "evaluation-service"
         type: choice
         options:
-          - auth-service
+          - evaluation-service
 
 permissions:
   contents: read
@@ -19,7 +19,7 @@ permissions:
 env:
   AWS_REGION: us-east-1
   CLUSTER_NAME: togglemaster-cluster
-  ALLOWED_SERVICE: auth-service
+  ALLOWED_SERVICE: evaluation-service
 
 jobs:
   rollout-restart:
