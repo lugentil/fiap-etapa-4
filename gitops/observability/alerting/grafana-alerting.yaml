@@ -94,71 +94,6 @@ data:
             continue: true
 
   rules.yaml: |
-    apiVersion: 1
-    groups:
-      - orgId: 1
-        name: togglemaster-critical
-        folder: ToggleMaster
-        interval: 30s
-        rules:
-          - uid: auth-service-high-5xx
-            title: AuthServiceHigh5xx
-            condition: B
-            data:
-              - refId: A
-                relativeTimeRange:
-                  from: 300
-                  to: 0
-                datasourceUid: prometheus
-                model:
-                  datasource:
-                    type: prometheus
-                    uid: prometheus
-                  editorMode: code
-                  expr: 'sum(rate(http_server_duration_milliseconds_count{service_name="auth-service",http_status_code=~"5.."}[2m])) / clamp_min(sum(rate(http_server_duration_milliseconds_count{service_name="auth-service"}[2m])), 0.01)'
-                  instant: true
-                  range: false
-                  intervalMs: 1000
-                  maxDataPoints: 43200
-                  refId: A
-              - refId: B
-                relativeTimeRange:
-                  from: 0
-                  to: 0
-                datasourceUid: __expr__
-                model:
-                  conditions:
-                    - evaluator:
-                        params: [0.05]
-                        type: gt
-                      operator:
-                        type: and
-                      query:
-                        params: [A]
-                      reducer:
-                        type: last
-                      type: query
-                  datasource:
-                    type: __expr__
-                    uid: __expr__
-                  expression: A
-                  intervalMs: 1000
-                  maxDataPoints: 43200
-                  refId: B
-                  type: threshold
-            noDataState: NoData
-            execErrState: Error
-            for: 1m
-            isPaused: false
-            annotations:
-              summary: "Taxa de erro 5xx do auth-service excede 5%"
-              description: "O auth-service esta retornando mais de 5% de erros HTTP 5xx nos ultimos 2 minutos. Self-healing sera acionado automaticamente."
-              runbook_url: "https://github.com/lugentil/fiap-etapa-4"
-            labels:
-              severity: critical
-              service: auth-service
-              action: rollout-restart
-              team: togglemaster
           - uid: pod-crashloop
             title: PodCrashLoopBackoff
             condition: B
@@ -173,7 +108,7 @@ data:
                     type: prometheus
                     uid: prometheus
                   editorMode: code
-                  expr: 'sum by (namespace, pod) (kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff",namespace=~"auth-service|flag-service|targeting-service|evaluation-service|analytics-service"})'
+                  expr: 'sum by (namespace, pod) (kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff",namespace=~"evaluation-service"})'
                   instant: true
                   range: false
                   intervalMs: 1000
@@ -209,8 +144,10 @@ data:
             for: 2m
             isPaused: false
             annotations:
-              summary: "Pod em CrashLoopBackOff"
-              description: "Pelo menos um pod de microsservico esta em CrashLoopBackOff ha mais de 2 minutos."
+              summary: "Pod do evaluation-service em CrashLoopBackOff"
+              description: "Pelo menos um pod de microsservico evaluation-service esta em CrashLoopBackOff ha mais de 2 minutos."
             labels:
               severity: critical
               team: togglemaster
+              action: rollout-restart
+              service: evaluation-service
