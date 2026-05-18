@@ -21,7 +21,7 @@ spec:
         - name: ecr-secret
       containers:
         - name: targeting-service
-          image: 929265854968.dkr.ecr.us-east-1.amazonaws.com/togglemaster/targeting-service:145860f955e7c109f40bd0577c0bcd199345d034
+          image: 929265854968.dkr.ecr.us-east-1.amazonaws.com/togglemaster/targeting-service:165ee7934dad6bbd18d4ff4f760d06d70d6f82c9
           imagePullPolicy: Always
           ports:
             - containerPort: 8003
