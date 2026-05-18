@@ -61,7 +61,7 @@ jobs:
           SVC="${{ steps.resolve.outputs.service }}"
           echo "Reiniciando deployment/$SVC no namespace $SVC"
           kubectl rollout restart deployment/$SVC -n $SVC
-          kubectl rollout status deployment/$SVC -n $SVC --timeout=180s
+          kubectl rollout status deployment/$SVC -n $SVC --timeout=30s
           echo "rollout_ok=true" >> "$GITHUB_OUTPUT"
 
       - name: Capturar status pos-restart
