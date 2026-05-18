@@ -78,6 +78,13 @@ data:
         group_interval: 1m
         repeat_interval: 30m
         routes:
+          - receiver: discord-channel
+            object_matchers:
+              - ["team", "=", "togglemaster"]
+            group_wait: 10s
+            group_interval: 1m
+            repeat_interval: 30m
+            continue: true
           - receiver: pagerduty-incidents
             object_matchers:
               - ["severity", "=", "critical"]
