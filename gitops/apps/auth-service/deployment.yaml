@@ -21,7 +21,7 @@ spec:
         - name: ecr-secret
       containers:
         - name: auth-service
-          image: 929265854968.dkr.ecr.us-east-1.amazonaws.com/togglemaster/auth-service:145860f955e7c109f40bd0577c0bcd199345d034
+          image: 929265854968.dkr.ecr.us-east-1.amazonaws.com/togglemaster/auth-service:1a1cc131f0f168af747d4f26d451ab3fa304f07c
           imagePullPolicy: Always
           ports:
             - containerPort: 8001
