@@ -94,6 +94,13 @@ data:
             continue: true
 
   rules.yaml: |
+    apiVersion: 1
+    groups:
+      - orgId: 1
+        name: togglemaster-critical
+        folder: ToggleMaster
+        interval: 30s
+        rules:
           - uid: pod-crashloop
             title: PodCrashLoopBackoff
             condition: B
@@ -144,10 +151,10 @@ data:
             for: 2m
             isPaused: false
             annotations:
-              summary: "Pod do evaluation-service em CrashLoopBackOff"
+              summary: "Pod no namespace evaluation-service em CrashLoopBackOff"
               description: "Pelo menos um pod de microsservico evaluation-service esta em CrashLoopBackOff ha mais de 2 minutos."
             labels:
               severity: critical
-              team: togglemaster
-              action: rollout-restart
               service: evaluation-service
+              action: rollout-restart
+              team: togglemaster
