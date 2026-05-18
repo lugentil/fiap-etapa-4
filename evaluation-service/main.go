@@ -115,6 +115,9 @@ func main() {
 
 	handler := otelhttp.NewHandler(mux, "evaluation-service",
 		otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents),
+		otelhttp.WithFilter(func(r *http.Request) bool {
+			return r.URL.Path != "/health"
+		}),
 	)
 
 	server := &http.Server{

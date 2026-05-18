@@ -44,6 +44,8 @@ spec:
               value: "parentbased_always_on"
             - name: OTEL_PYTHON_LOG_CORRELATION
               value: "true"
+            - name: OTEL_PYTHON_EXCLUDED_URLS
+              value: "health"
           resources:
             requests:
               memory: "128Mi"
